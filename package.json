@@ -1,0 +1,19 @@
+{
+  "name": "youtubebackend",
+  "version": "1.0.0",
+  "description": "Build youtube backend",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "keywords": [
+    "node"
+  ],
+  "author": "Abu Sayed Chowdhury",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  }
+}
