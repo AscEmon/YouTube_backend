@@ -31,7 +31,12 @@ const registerUser = asyncHandler(async (req, res) => {
 
     // Check avatar and coverImage vaidation
     const avatarLocalPath = req.files?.avatar?.[0]?.path;
-    const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
+    let coverImageLocalPath;
+    if (req.files?.coverImage?.[0]) {
+        coverImageLocalPath = req.files?.coverImage?.[0]?.path;
+    } else {
+        coverImageLocalPath = ""
+    }
 
     if (!avatarLocalPath) {
         throw new ApiError(400, "Avatar file is required")
@@ -61,7 +66,7 @@ const registerUser = asyncHandler(async (req, res) => {
         coverImage: coverImageResult?.url || ""
     })
     // Remove password and refreshToken from response
-    const createUser = await User.findById(user._id).select(" -password -refreshToken").exec()
+    const createUser = await User.findById(user._id).select(" -password -refreshToken ").exec()
 
 
     if (!createUser) {
