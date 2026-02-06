@@ -76,7 +76,7 @@ userSchema.methods.generateRefreshToken = function () {
     return jwt.sign({
         id: this._id,
 
-    }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: process.env.REFRESH_TOEKN_EXPIRY })
+    }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: process.env.REFRESH_TOKEN_EXPIRY })
 }
 
 const User = mongoose.model("User", userSchema)
