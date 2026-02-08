@@ -204,4 +204,52 @@ const generateRefreshToken = asyncHandler(async (req, res) => {
 
 })
 
-export { registerUser, loginUser, logoutUser, generateRefreshToken }
+
+const changePassword = asyncHandler(async (req, res) => {
+
+    const { oldPassword, newPassword } = req.body
+
+    const user = await User.findById(req.user?.id)
+
+    const isPasswordValid = user.comparePassword(oldPassword)
+
+    if (!isPasswordValid) {
+        throw new ApiError(422, "Invalid Password")
+    }
+    user.password = newPassword
+    await user.save();
+
+    return res.status(200)
+        .json(new ApiResponse(200, {}, "Password changed successfully"))
+
+})
+
+const getCurrentUser = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user?.id)
+        .select("-password -refreshToken")
+
+    return res.status(200)
+        .json(new ApiResponse(200, user, "User data fetched"))
+
+})
+
+
+const updateAccountDetails = asyncHandler(async (req, res) => {
+    const { fullName } = req.body
+
+    if (!fullName) {
+        throw new ApiError(400, "Full name is required")
+    }
+    const user = await User.findByIdAndUpdate(req.user?.id, {
+        $set: {
+            fullName,
+        }
+    }, {
+        new: true
+    }).select(" -password -refreshToken")
+    return res.status(200)
+        .json(new ApiResponse(200, user, "User data updated successfully"))
+})
+
+
+export { registerUser, loginUser, logoutUser, generateRefreshToken, changePassword, getCurrentUser, updateAccountDetails }
