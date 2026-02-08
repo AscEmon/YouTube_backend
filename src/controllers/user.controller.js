@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asynchandler.js";
 import { ApiError } from "../utils/api_error.js";
 import User from "../models/user.model.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { uploadOnCloudinary, deleteOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/api_response.js";
 import jwt from "jsonwebtoken";
 
@@ -252,4 +252,72 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
 })
 
 
-export { registerUser, loginUser, logoutUser, generateRefreshToken, changePassword, getCurrentUser, updateAccountDetails }
+
+const avatarUpdate = asyncHandler(async (req, res) => {
+    const avatarLocalPath = req.file?.path;
+    if (!avatarLocalPath) {
+        throw new ApiError(422, "Avatar file is required")
+    }
+    // Upload avatar and coverImage in cloudinary
+    const avatarResult = await uploadOnCloudinary(avatarLocalPath)
+    if (!avatarResult) {
+        throw new ApiError(422, "Avatar failed while uploading")
+    }
+    const user = await User.findById(req.user?.id)
+    if (user.avatar) {
+        await deleteOnCloudinary(user.avatar)
+    }
+    const userUpdated = await User.findByIdAndUpdate(req.user?.id, {
+        $set: {
+            avatar: avatarResult.url,
+        }
+
+    }, { new: true },).select("-password -refreshToken")
+
+    if (!userUpdated) {
+        throw new ApiError(422, "Avatar failed while uploading")
+    }
+
+    return res.status(200).json(
+        new ApiResponse(200, userUpdated, "Avatar is updated sucessfully")
+    )
+
+})
+
+const coverImageUpdate = asyncHandler(async (req, res) => {
+    const coverImageLocalPath = req.file?.path;
+    if (!coverImageLocalPath) {
+        throw new ApiError(422, "Cover Image file is required")
+    }
+
+    const user = await User.findById(req.user?.id)
+    if (user.coverImage) {
+        await deleteOnCloudinary(user.coverImage)
+    }
+    // Upload avatar and coverImage in cloudinary
+    const coverImageResult = await uploadOnCloudinary(coverImageLocalPath)
+    if (!coverImageResult) {
+        throw new ApiError(422, "Cover Image failed while uploading")
+    }
+
+    const userUpdated = await User.findByIdAndUpdate(req.user?.id, {
+        $set: {
+            coverImage: coverImageResult.url,
+        }
+
+    }, { new: true },).select("-password -refreshToken")
+
+
+    if (!userUpdated) {
+        throw new ApiError(422, "Cover Image failed while uploading")
+    }
+
+    return res.status(200).json(
+        new ApiResponse(200, userUpdated, "Cover Image is updated sucessfully")
+    )
+
+})
+
+
+
+export { registerUser, loginUser, logoutUser, generateRefreshToken, changePassword, getCurrentUser, updateAccountDetails, avatarUpdate, coverImageUpdate }
