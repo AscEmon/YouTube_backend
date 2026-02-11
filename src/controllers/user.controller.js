@@ -319,5 +319,66 @@ const coverImageUpdate = asyncHandler(async (req, res) => {
 })
 
 
+const getUserChannelProfile = asyncHandler(async (req, res) => {
+    const { userName } = req.params;
+    if (!userName) {
+        throw new ApiError(400, "User name is required")
+    }
+    const channel = await User.aggregate([
+        {
+            $match: { userName: userName?.toLowerCase() }
+        },
+        {
+            $lookup: {
+                from: "subcriptions",
+                localField: "_id",
+                foreignField: "channel",
+                as: "subscribers"
+            }
+        },
+        {
+            $lookup: {
+                from: "subcriptions",
+                localField: "_id",
+                foreignField: "subscriber",
+                as: "subscribedTo"
+            }
+        },
+        {
+            $addFields: {
+                subscriberCount: {
+                    $size: "$subscribers"
+                },
+                subscribeToCount: {
+                    $size: "$subscribedTo"
+                },
+                isSubscribed: {
+                    $cond: {
+                        if: { $in: [req.user?.id, "$subscribers"] },
+                        then: true,
+                        else: false
+                    }
+                }
+            }
+        },
+        {
+            $project: {
+                userName: 1,
+                email: 1,
+                fullName: 1,
+                avatar: 1,
+                coverImage: 1,
+                subscriberCount: 1,
+                subscribeToCount: 1,
+                isSubscribed: 1
+            }
+        }
+    ])
+    console.log(channel)
+    if (!channel) {
+        throw new ApiError(404, "Channel not found")
+    }
+    return res.status(200).json(new ApiResponse(200, channel[0], "Channel fetched successfully"))
+})
 
-export { registerUser, loginUser, logoutUser, generateRefreshToken, changePassword, getCurrentUser, updateAccountDetails, avatarUpdate, coverImageUpdate }
+export { registerUser, loginUser, logoutUser, generateRefreshToken, changePassword, getCurrentUser, updateAccountDetails, avatarUpdate, coverImageUpdate, getUserChannelProfile }
