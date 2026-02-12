@@ -153,8 +153,8 @@ const logoutUser = asyncHandler(async (req, res) => {
     await User.findByIdAndUpdate(
         req.user?._id,
         {
-            $set: {
-                refreshToken: undefined
+            $unset: {
+                refreshToken: 1
             }
         },
         {
@@ -400,35 +400,42 @@ const getUserWatchHistory = asyncHandler(async (req, res) => {
                 pipeline: [
                     {
                         $lookup: {
-                            from: "User",
+                            from: "users",
                             localField: "owner",
                             foreignField: "_id",
-                            as: "owner"
+                            as: "owner",
+                            pipeline: [
+                                {
+                                    $project: {
+                                        fullName: 1,
+                                        userName: 1,
+                                        avatar: 1,
+                                        coverImage: 1
+                                    }
+
+                                }
+                            ]
                         }
                     },
                     {
                         $addFields: {
-                            fullName: 1,
-                            userName: 1,
-                            avatar: 1,
-                            coverImage: 1
+                            owner: {
+                                $first: "$owner"
+                            }
                         }
-
                     }
                 ]
 
             },
         },
-        {
-            $project: {
-                first: "$owner"
-            }
-        }
+
 
 
 
     ])
-    return res.status(200).json(new ApiResponse(200, user?.watchHistory[0], "watchHistory fetched successfully"))
+    return res
+        .status(200)
+        .json(new ApiResponse(200, user?.watchHistory[0], "Watch History fetched successfully"))
 })
 
 export {
