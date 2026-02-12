@@ -4,6 +4,7 @@ import User from "../models/user.model.js";
 import { uploadOnCloudinary, deleteOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/api_response.js";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 
 const generateRefreshAndAccessToken = async (userId) => {
     try {
@@ -381,4 +382,65 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, channel[0], "Channel fetched successfully"))
 })
 
-export { registerUser, loginUser, logoutUser, generateRefreshToken, changePassword, getCurrentUser, updateAccountDetails, avatarUpdate, coverImageUpdate, getUserChannelProfile }
+
+const getUserWatchHistory = asyncHandler(async (req, res) => {
+    const user = await User.aggregate([
+        {
+            $match: {
+                _id: mongoose.Types.ObjectId(req.user.id)
+            }
+
+        },
+        {
+            $lookup: {
+                from: "videos",
+                localField: "watchHistory",
+                foreignField: "_id",
+                as: "watchHistory",
+                pipeline: [
+                    {
+                        $lookup: {
+                            from: "User",
+                            localField: "owner",
+                            foreignField: "_id",
+                            as: "owner"
+                        }
+                    },
+                    {
+                        $addFields: {
+                            fullName: 1,
+                            userName: 1,
+                            avatar: 1,
+                            coverImage: 1
+                        }
+
+                    }
+                ]
+
+            },
+        },
+        {
+            $project: {
+                first: "$owner"
+            }
+        }
+
+
+
+    ])
+    return res.status(200).json(new ApiResponse(200, user?.watchHistory[0], "watchHistory fetched successfully"))
+})
+
+export {
+    registerUser,
+    loginUser,
+    logoutUser,
+    generateRefreshToken,
+    changePassword,
+    getCurrentUser,
+    updateAccountDetails,
+    avatarUpdate,
+    coverImageUpdate,
+    getUserChannelProfile,
+    getUserWatchHistory
+}
