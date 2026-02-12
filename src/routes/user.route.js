@@ -44,7 +44,7 @@ router.route("/cover-image-update").patch(
     coverImageUpdate
 )
 
-router.route("/channel/:username").get(verifyJWT, getUserChannelProfile)
+router.route("/channel/:userName").get(verifyJWT, getUserChannelProfile)
 router.route("/watch-history").get(verifyJWT, getUserWatchHistory)
 
 export default router
