@@ -2,7 +2,7 @@ import mongoose, { isValidObjectId } from "mongoose"
 import { Video } from "../models/video.model.js"
 import { ApiError } from "../utils/api_error.js"
 import { ApiResponse } from "../utils/api_response.js"
-import { asyncHandler } from "../utils/asyncHandler.js"
+import { asyncHandler } from "../utils/asynchandler.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js"
 
 
@@ -196,3 +196,4 @@ export {
     deleteVideo,
     togglePublishStatus
 }
+

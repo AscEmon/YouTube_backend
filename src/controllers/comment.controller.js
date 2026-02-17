@@ -4,6 +4,7 @@ import { ApiError } from "../utils/api_error.js"
 import { ApiResponse } from "../utils/api_response.js"
 import { Comment } from "../models/comment.model.js"
 import { Video } from "../models/video.model.js"
+import { Schema } from "mongoose"
 
 
 const createComment = asyncHandler(async (req, res) => {
@@ -101,3 +102,5 @@ const deleteComment = asyncHandler(async (req, res) => {
 
 
 export { createComment, getVideoComments, updateComment, deleteComment }
+
+
